@@ -1,14 +1,16 @@
+// ---------------- LOGIN CONFIG ----------------
 const VALID_USER = "Phantom Forge";
 const VALID_PASS = "IKHEETHARm";
 
+// ---------------- LOGIN -----------------------
 function login() {
-  const u = document.getElementById("user").value.trim();
-  const p = document.getElementById("pass").value.trim();
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
 
-  if (u === VALID_USER && p === VALID_PASS) {
+  if (user === VALID_USER && pass === VALID_PASS) {
     localStorage.setItem("session", "ACTIVE");
     window.location.href = "panel.html";
   } else {
-    alert("Foute login!");
+    document.getElementById("error").textContent = "Foute login!";
   }
 }
