@@ -1,14 +1,31 @@
-const TOKEN = localStorage.getItem("session");
+// ------------------ LOGIN ------------------
+const VALID_USER = "Phantom Forge";
+const VALID_PASS = "IKHEETHARm";
 
+function login() {
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
+
+  if (u === VALID_USER && p === VALID_PASS) {
+    localStorage.setItem("session", "ACTIVE");
+    window.location.href = "panel.html";
+  } else {
+    alert("Foute login!");
+  }
+}
+
+// ------------------ AUTH CHECK ------------------
+const TOKEN = localStorage.getItem("session");
 if (!TOKEN) window.location.href = "index.html";
 
+// ------------------ CONFIG ------------------
 const GITHUB_USER = "phantomforgeofficial";
 const REPO_NAME = "Roblox-phantomforge-Scripts";
 const FILE_PATH = "public/config.json";
 
 // ----------- LADEN -----------
 async function load() {
-  const r = const r = await fetch(`https://${GITHUB_USER}.github.io/${REPO_NAME}/public/config.json`);
+  const r = await fetch(`https://${GITHUB_USER}.github.io/${REPO_NAME}/public/config.json`);
   const json = await r.json();
 
   document.getElementById("places").value =
@@ -25,7 +42,6 @@ async function save() {
     .filter(v => !isNaN(v));
 
   const newContent = JSON.stringify({ allowedPlaces: placeList }, null, 2);
-
   const sha = await getSHA();
 
   await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`, {
