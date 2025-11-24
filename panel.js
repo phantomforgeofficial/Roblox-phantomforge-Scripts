@@ -1,13 +1,5 @@
 /* panel.js — admin logic voor dashboard, games en per-game instellingen */
 
-const GITHUB_USER = "phantomforgeofficial";            // JOUW GITHUB GEBRUIKSNAAM
-const REPO_NAME = "Roblox-phantomforge-Scripts";      // jouw repo
-const FILE_PATH = "public/config.json";
-
-// VOER HIER JE GITHUB Personal Access Token in (tijdelijk) of gebruik server-proxy.
-// ********** PLAATS NOOIT JE TOKEN IN EEN OPEN SOURCE REPO **********
-const GITHUB_TOKEN = "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"; // <-- zet hier jouw token voor test (string) of gebruik proxy
-
 // auth/session check
 (function initAuth() {
   const s = localStorage.getItem("phantom_session");
@@ -19,19 +11,17 @@ document.getElementById?.("logout")?.addEventListener("click", () => {
   location.href = "index.html";
 });
 
-// helper: fetch config from raw GitHub Pages URL
+// helper: fetch config from raw GitHub Pages URL (read-only)
 async function fetchConfig() {
-  const url = `https://${GITHUB_USER}.github.io/${REPO_NAME}/public/config.json`;
+  const url = `https://phantomforgeofficial.github.io/Roblox-phantomforge-Scripts/public/config.json`;
   const r = await fetch(url);
   return await r.json();
 }
 
-// helper: get SHA for file (needed for GitHub PUT)
-async function getSHA() {
-  const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`;
-  const r = await fetch(apiUrl);
-  const j = await r.json();
-  return j.sha;
+// helper: get query param
+function getQueryParam(name) {
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
 }
 
 // ---------- DASHBOARD ----------
@@ -42,7 +32,7 @@ async function loadDashboard() {
 }
 window.loadDashboard = loadDashboard;
 
-// save function used by dashboard
+// save dashboard config via server proxy
 async function save() {
   const raw = document.getElementById("places").value;
   const list = raw.split("\n").map(x => parseInt(x.trim())).filter(x => !isNaN(x));
@@ -51,26 +41,16 @@ async function save() {
   config.allowedPlaces = list;
   config.version = (config.version || 0) + 1;
 
-  const content = JSON.stringify(config, null, 2);
-  const sha = await getSHA();
-
-  if (!GITHUB_TOKEN) {
-    alert("GITHUB_TOKEN niet ingesteld in panel.js. Zet tijdelijk je token in GITHUB_TOKEN voor opslaan of maak een proxy.");
-    return;
-  }
-
-  await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`, {
-    method: "PUT",
-    headers: {
-      "Authorization": `token ${GITHUB_TOKEN}`,
-      "Content-Type": "application/json"
-    },
+  const r = await fetch("/save-config", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      message: "Update config via admin panel",
-      content: btoa(content),
-      sha: sha
+      content: JSON.stringify(config, null, 2),
+      message: "Update config via admin dashboard"
     })
   });
+
+  if (!r.ok) return alert("Kon config niet opslaan");
 
   document.getElementById("status").textContent = "Opgeslagen!";
   setTimeout(() => document.getElementById("status").textContent = "", 3000);
@@ -88,27 +68,27 @@ async function loadGamesPage() {
     const g = games[placeId];
     const el = document.createElement("div");
     el.className = "game-card";
+
     const img = document.createElement("img");
     img.src = g.image || "/_placeholder.png";
     img.alt = g.name || placeId;
+
     const title = document.createElement("div");
     title.textContent = `${g.name || "Unknown"} (${placeId})`;
+
     el.appendChild(img);
     el.appendChild(title);
+
     el.addEventListener("click", () => {
       location.href = `game-settings.html?id=${placeId}`;
     });
+
     container.appendChild(el);
   }
 }
 window.loadGamesPage = loadGamesPage;
 
 // ---------- GAME SETTINGS ----------
-function getQueryParam(name) {
-  const u = new URL(location.href);
-  return u.searchParams.get(name);
-}
-
 async function loadGameSettings() {
   const id = getQueryParam("id");
   if (!id) return;
@@ -122,7 +102,6 @@ async function loadGameSettings() {
   const list = document.getElementById("scriptsList");
   list.innerHTML = "";
 
-  // list known scripts (if none exists, show examples)
   const available = game.scripts && Object.keys(game.scripts).length
     ? Object.keys(game.scripts)
     : ["AntiExploit", "MovementFix", "InventorySync"];
@@ -130,13 +109,16 @@ async function loadGameSettings() {
   available.forEach(name => {
     const wrapper = document.createElement("div");
     wrapper.className = "script-row";
+
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.id = "chk_" + name;
     checkbox.checked = !!(game.scripts && game.scripts[name]);
+
     const label = document.createElement("label");
     label.htmlFor = checkbox.id;
     label.textContent = name;
+
     wrapper.appendChild(checkbox);
     wrapper.appendChild(label);
     list.appendChild(wrapper);
@@ -159,40 +141,29 @@ async function saveGameConfig() {
     cfg.games[id].scripts[key] = cb.checked;
   });
 
-  // increment version
   cfg.version = (cfg.version || 0) + 1;
 
-  const sha = await getSHA();
-  const content = JSON.stringify(cfg, null, 2);
-
-  if (!GITHUB_TOKEN) {
-    alert("GITHUB_TOKEN niet ingesteld. Voeg tijdelijk je token toe in panel.js voor opslaan.");
-    return;
-  }
-
-  await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`, {
-    method: "PUT",
-    headers: {
-      "Authorization": `token ${GITHUB_TOKEN}`,
-      "Content-Type": "application/json"
-    },
+  // save via server proxy
+  const r = await fetch("/save-config", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      message: `Update game ${id} config`,
-      content: btoa(content),
-      sha: sha
+      content: JSON.stringify(cfg, null, 2),
+      message: `Update game ${id} config via admin panel`
     })
   });
+
+  if (!r.ok) return alert("Kon config niet opslaan");
 
   document.getElementById("gameStatus").textContent = "Opgeslagen!";
   setTimeout(() => document.getElementById("gameStatus").textContent = "", 3000);
 }
 window.saveGameConfig = saveGameConfig;
 
-// helper: init page (router)
+// ---------- INIT PAGE ----------
 document.addEventListener("DOMContentLoaded", async () => {
   const path = location.pathname.split("/").pop();
   if (path === "dashboard.html") await loadDashboard();
   if (path === "games.html") await loadGamesPage();
   if (path === "game-settings.html") await loadGameSettings();
 });
-     
