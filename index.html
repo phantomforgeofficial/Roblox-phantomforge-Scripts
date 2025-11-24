@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <meta charset="utf-8" />
+  <title>Phantom Forge — Login</title>
   <link rel="stylesheet" href="style.css">
-  <script src="login.js"></script>
+  <script src="login.js" defer></script>
 </head>
 <body>
   <div class="login-box">
-    <h2>Secure Script Login</h2>
-
-    <input id="username" placeholder="Gebruikersnaam">
-    <input id="password" type="password" placeholder="Wachtwoord">
-
-    <button onclick="login()">Login</button>
-
+    <h2>Phantom Forge Admin</h2>
+    <input id="username" placeholder="Gebruikersnaam" autocomplete="username">
+    <input id="password" type="password" placeholder="Wachtwoord" autocomplete="current-password">
+    <button id="btnLogin">Inloggen</button>
     <p id="error" class="error"></p>
   </div>
 </body>
