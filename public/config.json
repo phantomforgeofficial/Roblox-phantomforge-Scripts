@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "allowedPlaces": [123456789,],
+  "allowedPlaces": [123456789],
   "games": {
     "123456789": {
       "name": "Voorbeeld Game",
