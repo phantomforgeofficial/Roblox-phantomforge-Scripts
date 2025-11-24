@@ -7,14 +7,12 @@ dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 
-const { GITHUB_TOKEN, GITHUB_USER, REPO_NAME, FILE_PATH } = process.env;
+const { GITHUB_TOKEN, GITHUB_USER, REPO_NAME, FILE_PATH, PORT } = process.env;
 
-// helper: get SHA
+// helper: get SHA of file
 async function getSHA() {
   const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`;
-  const r = await fetch(apiUrl, {
-    headers: { Authorization: `token ${GITHUB_TOKEN}` }
-  });
+  const r = await fetch(apiUrl, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
   const j = await r.json();
   return j.sha;
 }
@@ -48,4 +46,4 @@ app.post("/save-config", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
