@@ -1,3 +1,15 @@
 {
-  "allowedPlaces": [123456789]
+  "version": 1,
+  "allowedPlaces": [123456789],
+  "games": {
+    "123456789": {
+      "name": "Voorbeeld Game",
+      "image": "/mnt/data/186dcd1f-f771-4618-81ad-2189de16867b.png",
+      "scripts": {
+        "AntiExploit": true,
+        "MovementFix": false,
+        "InventorySync": true
+      }
+    }
+  }
 }
