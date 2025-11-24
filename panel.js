@@ -6,7 +6,7 @@ const FILE_PATH = "public/config.json";
 
 // VOER HIER JE GITHUB Personal Access Token in (tijdelijk) of gebruik server-proxy.
 // ********** PLAATS NOOIT JE TOKEN IN EEN OPEN SOURCE REPO **********
-const GITHUB_TOKEN = "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"; // <-- zet hier jouw token voor test (string) of gebruik proxy
+const GITHUB_TOKEN = "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"; // <-- zet hier jouw token voor test (string) of gebruik proxy
 
 // auth/session check
 (function initAuth() {
