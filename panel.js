@@ -1,6 +1,13 @@
-/* panel.js — admin logic voor dashboard, games en per-game instellingen */
+/* panel.js — admin logic zonder GitHub token in de frontend */
 
-// auth/session check
+const GITHUB_USER = "phantomforgeofficial";
+const REPO_NAME = "Roblox-phantomforge-Scripts";
+const FILE_PATH = "public/config.json";
+
+// backend API endpoint
+const API_ENDPOINT = "/api.php";
+
+// session check
 (function initAuth() {
   const s = localStorage.getItem("phantom_session");
   if (!s) location.href = "index.html";
@@ -11,20 +18,14 @@ document.getElementById?.("logout")?.addEventListener("click", () => {
   location.href = "index.html";
 });
 
-// helper: fetch config from raw GitHub Pages URL (read-only)
+// fetch config (direct van GitHub Pages)
 async function fetchConfig() {
-  const url = `https://phantomforgeofficial.github.io/Roblox-phantomforge-Scripts/public/config.json`;
+  const url = `https://${GITHUB_USER}.github.io/${REPO_NAME}/public/config.json`;
   const r = await fetch(url);
   return await r.json();
 }
 
-// helper: get query param
-function getQueryParam(name) {
-  const u = new URL(location.href);
-  return u.searchParams.get(name);
-}
-
-// ---------- DASHBOARD ----------
+// load dashboard
 async function loadDashboard() {
   const config = await fetchConfig();
   document.getElementById("places").value = (config.allowedPlaces || []).join("\n");
@@ -32,7 +33,7 @@ async function loadDashboard() {
 }
 window.loadDashboard = loadDashboard;
 
-// save dashboard config via server proxy
+// save dashboard
 async function save() {
   const raw = document.getElementById("places").value;
   const list = raw.split("\n").map(x => parseInt(x.trim())).filter(x => !isNaN(x));
@@ -41,31 +42,37 @@ async function save() {
   config.allowedPlaces = list;
   config.version = (config.version || 0) + 1;
 
-  const r = await fetch("/save-config", {
+  const response = await fetch(API_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      content: JSON.stringify(config, null, 2),
-      message: "Update config via admin dashboard"
+      action: "update_file",
+      user: GITHUB_USER,
+      repo: REPO_NAME,
+      path: FILE_PATH,
+      content: JSON.stringify(config, null, 2)
     })
   });
 
-  if (!r.ok) return alert("Kon config niet opslaan");
+  const result = await response.json();
+  if (!result.success) {
+    alert("Kon config niet opslaan: " + result.error);
+    return;
+  }
 
   document.getElementById("status").textContent = "Opgeslagen!";
   setTimeout(() => document.getElementById("status").textContent = "", 3000);
 }
 window.save = save;
 
-// ---------- GAMES LIST ----------
+// ----- GAMES -----
 async function loadGamesPage() {
   const config = await fetchConfig();
   const games = config.games || {};
   const container = document.getElementById("gamesList");
   container.innerHTML = "";
 
-  for (const placeId of Object.keys(games)) {
-    const g = games[placeId];
+  Object.entries(games).forEach(([placeId, g]) => {
     const el = document.createElement("div");
     el.className = "game-card";
 
@@ -84,11 +91,15 @@ async function loadGamesPage() {
     });
 
     container.appendChild(el);
-  }
+  });
 }
 window.loadGamesPage = loadGamesPage;
 
-// ---------- GAME SETTINGS ----------
+// GAME SETTINGS
+function getQueryParam(name) {
+  return new URL(location.href).searchParams.get(name);
+}
+
 async function loadGameSettings() {
   const id = getQueryParam("id");
   if (!id) return;
@@ -134,33 +145,37 @@ async function saveGameConfig() {
   cfg.games = cfg.games || {};
   cfg.games[id] = cfg.games[id] || { name: `Game ${id}`, image: "", scripts: {} };
 
-  // read checkboxes
-  const boxes = document.querySelectorAll("#scriptsList input[type='checkbox']");
-  boxes.forEach(cb => {
+  document.querySelectorAll("#scriptsList input[type='checkbox']").forEach(cb => {
     const key = cb.id.replace("chk_", "");
     cfg.games[id].scripts[key] = cb.checked;
   });
 
   cfg.version = (cfg.version || 0) + 1;
 
-  // save via server proxy
-  const r = await fetch("/save-config", {
+  const response = await fetch(API_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      content: JSON.stringify(cfg, null, 2),
-      message: `Update game ${id} config via admin panel`
+      action: "update_file",
+      user: GITHUB_USER,
+      repo: REPO_NAME,
+      path: FILE_PATH,
+      content: JSON.stringify(cfg, null, 2)
     })
   });
 
-  if (!r.ok) return alert("Kon config niet opslaan");
+  const result = await response.json();
+  if (!result.success) {
+    alert("Kon game config niet opslaan: " + result.error);
+    return;
+  }
 
   document.getElementById("gameStatus").textContent = "Opgeslagen!";
   setTimeout(() => document.getElementById("gameStatus").textContent = "", 3000);
 }
 window.saveGameConfig = saveGameConfig;
 
-// ---------- INIT PAGE ----------
+// router
 document.addEventListener("DOMContentLoaded", async () => {
   const path = location.pathname.split("/").pop();
   if (path === "dashboard.html") await loadDashboard();
