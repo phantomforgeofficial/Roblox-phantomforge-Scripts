@@ -1,38 +1,42 @@
-body {
-  background: #111;
-  color: white;
-  font-family: Arial;
-  display: flex;
-  justify-content: center;
-  padding-top: 80px;
+:root{
+  --primary: #000000;
+  --primary-text: #ffffff;
+  --secondary: #8000ff;
+  --bg: #050505;
+  --card: #0f0f0f;
+  --muted: #8a8a8a;
 }
 
-.login-box, .panel-box {
-  background: #222;
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
+*{box-sizing:border-box;font-family:Inter, system-ui, Arial, sans-serif}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--primary-text);
+  min-height:100vh;
 }
 
-input, textarea {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  background: #333;
-  color: white;
-  border: none;
-  border-radius: 5px;
+.nav{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 20px;
+  background:linear-gradient(90deg,var(--primary), #111);
+  border-bottom:1px solid #151515;
 }
+.nav-item{color:var(--primary-text);text-decoration:none;padding:8px}
+.nav-cta{margin-left:auto;background:var(--secondary);color:white;border:none;padding:8px 12px;border-radius:6px}
 
-button {
-  width: 100%;
-  padding: 10px;
-  background: dodgerblue;
-  color: 8000ff;
-  border: none;
-  border-radius: 5px;
-}
+.container{max-width:1100px;margin:28px auto;padding:0 16px;display:grid;grid-template-columns:1fr 320px;gap:20px}
+.card{background:var(--card);padding:18px;border-radius:10px;border:1px solid #151515}
+.card.small{height:110px}
+textarea{width:100%;background:#0b0b0b;color:var(--primary-text);border:1px solid #222;padding:10px;border-radius:6px}
+input{background:#0b0b0b;color:var(--primary-text);border:1px solid #222;padding:8px;border-radius:6px;width:100%}
+button{background:var(--secondary);color:white;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
+.error{color:#ff6b6b}
+.controls{display:flex;align-items:center;gap:12px;margin-top:10px}
 
-.error {
-  color: red;
-}
+/* games grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.game-card{background:#101010;padding:12px;border-radius:8px;display:flex;gap:12px;align-items:center;cursor:pointer;border:1px solid #1a1a1a}
+.game-card img{width:64px;height:64px;object-fit:cover;border-radius:6px}
+.script-row{display:flex;gap:8px;align-items:center;padding:6px 0}
